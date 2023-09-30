@@ -45,7 +45,7 @@ public class ConveyorController : MonoBehaviour
     {
         if (seedsInSlots[slotIndex] == null)
         {
-            GameObject newSeed = Instantiate(seedPrefabs[prefabIndex], slots[slotIndex].position, Quaternion.identity);
+            GameObject newSeed = Instantiate(seedPrefabs[prefabIndex], slots[slotIndex], false);
             newSeed.transform.SetParent(slots[slotIndex]);
             seedsInSlots[slotIndex] = newSeed;
         }
