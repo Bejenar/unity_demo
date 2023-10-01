@@ -7,39 +7,47 @@ using UnityEngine.UI;
 
 public class Cell : MonoBehaviour, IPointerDownHandler
 {
+    [SerializeField] private AudioClip errorClip;
+    [SerializeField] private GameObject[] flowerSpritePrefabs;
+    
     public Flower currentFlower = null;
+    public GameObject currentFlowerObject = null;
 
     public List<Cell> _neighbours = new();
 
     public string code;
 
-    private Image _flowerImage;
-
     private GridManager _gridManager;
 
     private ScoreManager _scoreManager;
 
+    private ConveyorController _conveyorController;
+
+    private Dictionary<String, GameObject> _flowerPrefabMap = new();
+    
+
     // Start is called before the first frame update
     void Awake()
     {
+        _flowerPrefabMap = flowerSpritePrefabs.ToList()
+            .ToDictionary(prefab => prefab.GetComponent<FlowerObject>().flower.flowerName, prefab => prefab);
+        
         _gridManager = FindObjectOfType<GridManager>();
-        var component = transform.Find("Flower").GetComponent<Image>();
-        _flowerImage = component;
         _scoreManager = FindObjectOfType<ScoreManager>();
+        _conveyorController = FindObjectOfType<ConveyorController>();
         RemoveFlower();
     }
 
     private void RemoveFlower()
     {
-        var flowerImageColor = _flowerImage.color;
-        flowerImageColor.a = 0;
-        _flowerImage.color = flowerImageColor;
+        Destroy(currentFlowerObject);
         currentFlower = null;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void AddFlower(Flower flower)
     {
+        currentFlowerObject = Instantiate(_flowerPrefabMap[flower.flowerName], transform, false);
+        currentFlower = flower;
     }
 
     public void AddNeighbour(Cell neighbour)
@@ -47,11 +55,17 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         _neighbours.Add(neighbour);
     }
 
+    private void PlayErrorSound()
+    {
+        AudioSource.PlayClipAtPoint(errorClip, Vector2.zero);
+    }
+
     public void OnFlowerAdded(Flower flower)
     {
         if (currentFlower)
         {
             Debug.Log("there is already a flower on this cell");
+            PlayErrorSound();
             return;
         }
 
@@ -61,6 +75,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         if (IsAnyNeighbourIncompatible(neighboursWithFlowers, flower))
         {
             Debug.Log("Can not plant here. Incompatible plant nearby");
+            PlayErrorSound();
             currentFlower = null;
             return;
         }
@@ -69,16 +84,14 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         if (flowersOfSameTypePresent && IsNoSameNeighbours(neighboursWithFlowers, flower))
         {
             Debug.Log("Can not plant here. No neighbour with the same color");
+            PlayErrorSound();
             currentFlower = null;
             return;
         }
 
-        currentFlower = flower;
-        _flowerImage.color = flower.color;
-        var flowerImageColor = _flowerImage.color;
-        flowerImageColor.a = 255;
-        _flowerImage.color = flowerImageColor;
+        AddFlower(flower);
 
+        _conveyorController.MoveAndSelect();
         if (neighboursWithFlowers.Count == 0)
         {
             Debug.Log("Added flower no problem as neighbor cells are empty");
@@ -179,5 +192,6 @@ public class Cell : MonoBehaviour, IPointerDownHandler
     public void OnPointerDown(PointerEventData eventData)
     {
         Debug.Log("Clicked at " + code + " Data " + eventData);
+        OnFlowerAdded(ConveyorController.SelectedFlower);
     }
 }

@@ -12,6 +12,10 @@ public class GridManager : MonoBehaviour
 
     private GridLayoutGroup _grid;
     public Cell[,] _cells;
+    
+    [SerializeField] private AudioClip audioClip;
+
+    private LevelManager _levelManager;
 
     // Start is called before the first frame update
     void Awake()
@@ -21,6 +25,7 @@ public class GridManager : MonoBehaviour
 
     public void Initialize()
     {
+        _levelManager = FindObjectOfType<LevelManager>();
         _grid = parent.GetComponent<GridLayoutGroup>();
         _cells = new Cell[size, size];
         Generate(size);
@@ -143,5 +148,21 @@ public class GridManager : MonoBehaviour
     public void SpawnObstacles(int count)
     {
         
+    }
+
+    public void CheckIfNoAvailableTurns()
+    {
+        var availableCells = FindAvailableCells(ConveyorController.SelectedFlower);
+        if (availableCells.Count == 0)
+        {
+            GameOver();
+        }
+    }
+
+    public void GameOver()
+    {
+        Debug.LogError("game over");
+        AudioSource.PlayClipAtPoint(audioClip, Vector2.zero);
+        _levelManager.LoadAfterDelay("GridTest", audioClip.length + 1);
     }
 }

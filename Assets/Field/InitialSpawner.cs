@@ -26,10 +26,4 @@ public class InitialSpawner : MonoBehaviour
         Debug.Log("Planting " + toPlant.Count);
         _gridManager.PlantFlowersAtRandomSpot(toPlant);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

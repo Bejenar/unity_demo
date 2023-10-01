@@ -1,68 +1,60 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ConveyorController : MonoBehaviour
 {
     public GameObject[] seedPrefabs;
-    public Transform[] slots;
-    private GameObject[] seedsInSlots;
+    public static Flower SelectedFlower;
 
+    [SerializeField] private int queueSize = 3;
+    private LinkedList<GameObject> _seedQueue = new();
+    private GridManager _gridManager;
     private void Start()
     {
-        seedsInSlots = new GameObject[slots.Length];
+        _gridManager = FindObjectOfType<GridManager>();
         SpawnInitialSeeds();
+        SelectCurrentFlower();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.X))
         {
-            MoveSeeds();
-            SpawnRandomSeedInFirstSlot();
+            MoveAndSelect();
         }
+    }
+
+    public void MoveAndSelect()
+    {
+        Destroy(_seedQueue.First.Value);
+        _seedQueue.RemoveFirst();
+        AddRandomLast();
+        SelectCurrentFlower();
+        _gridManager.CheckIfNoAvailableTurns();
     }
 
     private void SpawnInitialSeeds()
     {
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < queueSize; i++)
         {
-            SpawnRandomSeedInSlot(i);
+            AddRandomLast();
         }
     }
 
-    private void SpawnRandomSeedInFirstSlot()
+    private void AddRandomLast()
     {
-        int randomIndex = Random.Range(0, seedPrefabs.Length);
-        SpawnSeedInSlot(randomIndex, 0);
+        int randomIndex = Random.Range(0, Mathf.Clamp(LevelUpManager._level - 1, 2, 5));
+        GameObject newSeed = Instantiate(seedPrefabs[randomIndex], transform, false);
+        Debug.Log(newSeed + " - " + newSeed.GetInstanceID());
+        _seedQueue.AddLast(newSeed);
+        Debug.Log("adding seed to the conveyor");
+        Debug.Log(_seedQueue.Count);
     }
 
-    private void SpawnRandomSeedInSlot(int slotIndex)
+    private void SelectCurrentFlower()
     {
-        int randomIndex = Random.Range(0, seedPrefabs.Length);
-        SpawnSeedInSlot(randomIndex, slotIndex);
-    }
-
-    private void SpawnSeedInSlot(int prefabIndex, int slotIndex)
-    {
-        if (seedsInSlots[slotIndex] == null)
-        {
-            GameObject newSeed = Instantiate(seedPrefabs[prefabIndex], slots[slotIndex], false);
-            newSeed.transform.SetParent(slots[slotIndex]);
-            seedsInSlots[slotIndex] = newSeed;
-        }
-    }
-
-    private void MoveSeeds()
-    {
-        for (int i = seedsInSlots.Length - 1; i > 0; i--)
-        {
-            if (seedsInSlots[i - 1] != null)
-            {
-                Destroy(seedsInSlots[i]);
-                seedsInSlots[i] = seedsInSlots[i - 1];
-                seedsInSlots[i - 1] = null;
-                seedsInSlots[i].transform.SetParent(slots[i]);
-                seedsInSlots[i].transform.position = slots[i].position;
-            }
-        }
+        Debug.LogFormat("Queue first element is {0}", _seedQueue.First.Value);
+        SelectedFlower = _seedQueue.First.Value.GetComponent<Seed>().flower;
+        Debug.Log(SelectedFlower.flowerName);
     }
 }
