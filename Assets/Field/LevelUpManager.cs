@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class LevelUpManager : MonoBehaviour
 {
+    [SerializeField] private GameObject levelUpParticle;
+
     private GridManager _gridManager;
     private InitialSpawner _spawner;
     private ScoreManager _scoreManager;
@@ -12,13 +14,17 @@ public class LevelUpManager : MonoBehaviour
     private Dictionary<int, int> _levelUpRequirements;
 
     // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         _level = 3;
+    }
+
+    void Start()
+    {
         _gridManager = FindObjectOfType<GridManager>();
         _spawner = FindObjectOfType<InitialSpawner>();
         _scoreManager = FindObjectOfType<ScoreManager>();
-        
+
         _levelUpRequirements = new Dictionary<int, int>();
         _levelUpRequirements.Add(4, 500);
         _levelUpRequirements.Add(5, 1250);
@@ -30,14 +36,14 @@ public class LevelUpManager : MonoBehaviour
     public void CheckForLevelUp()
     {
         var scoreTotal = _scoreManager.Score;
-        
+
         if (!_levelUpRequirements.ContainsKey(_level + 1))
         {
             return;
         }
 
         var requiredScore = _levelUpRequirements[_level + 1];
-        Debug.LogFormat("Requiring {0} for next level {1}. Current score {2}", requiredScore, _level +1, scoreTotal);
+        Debug.LogFormat("Requiring {0} for next level {1}. Current score {2}", requiredScore, _level + 1, scoreTotal);
         if (requiredScore <= scoreTotal)
         {
             Debug.LogFormat("worthy of level up to {0}", _level + 1);
@@ -47,6 +53,7 @@ public class LevelUpManager : MonoBehaviour
 
     public void LevelUp()
     {
+        SpawnParticle();
         _level++;
         _gridManager.DestroyCells();
         if (_gridManager.size < 7)
@@ -71,5 +78,14 @@ public class LevelUpManager : MonoBehaviour
         {
             Debug.Log("you won!");
         }
+    }
+
+    public void SpawnParticle()
+    {
+        var parent = GameObject.Find("ParticleParent");
+        var obj = Instantiate(levelUpParticle, parent.transform, false);
+        var particleSystem = obj.GetComponent<ParticleSystem>();
+
+        particleSystem.Play();
     }
 }

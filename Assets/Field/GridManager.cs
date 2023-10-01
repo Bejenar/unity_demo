@@ -17,6 +17,8 @@ public class GridManager : MonoBehaviour
 
     private LevelManager _levelManager;
 
+    public bool isGameOver = false;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -163,6 +165,8 @@ public class GridManager : MonoBehaviour
     {
         Debug.LogError("game over");
         AudioSource.PlayClipAtPoint(audioClip, Vector2.zero);
+        isGameOver = true;
+        LevelUpManager._level = 3;
         _levelManager.LoadAfterDelay("Core Gameplay", audioClip.length + 1);
     }
 }

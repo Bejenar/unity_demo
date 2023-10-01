@@ -16,14 +16,6 @@ public class ConveyorController : MonoBehaviour
         SelectCurrentFlower();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            MoveAndSelect();
-        }
-    }
-
     public void MoveAndSelect()
     {
         Destroy(_seedQueue.First.Value);

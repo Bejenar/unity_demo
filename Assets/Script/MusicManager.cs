@@ -29,7 +29,7 @@ public class MusicManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         var clipToPlay = levelMusicChange[scene.buildIndex];
-        if (!clipToPlay || IsTheSameClipPlaying(clipToPlay)) return;
+        if (IsTheSameClipPlaying(clipToPlay)) return;
         Debug.LogFormat("current clip is {0}", clipToPlay);
         _audioSource.clip = clipToPlay;
         _audioSource.loop = true;

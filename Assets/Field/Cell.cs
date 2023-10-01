@@ -1,15 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class Cell : MonoBehaviour, IPointerDownHandler
 {
     [SerializeField] private AudioClip errorClip;
     [SerializeField] private GameObject[] flowerSpritePrefabs;
-    
+
     public Flower currentFlower = null;
     public GameObject currentFlowerObject = null;
 
@@ -24,14 +24,15 @@ public class Cell : MonoBehaviour, IPointerDownHandler
     private ConveyorController _conveyorController;
 
     private Dictionary<String, GameObject> _flowerPrefabMap = new();
-    
+    private static readonly int PairTrigger = Animator.StringToHash("PairTrigger");
+
 
     // Start is called before the first frame update
     void Awake()
     {
         _flowerPrefabMap = flowerSpritePrefabs.ToList()
             .ToDictionary(prefab => prefab.GetComponent<FlowerObject>().flower.flowerName, prefab => prefab);
-        
+
         _gridManager = FindObjectOfType<GridManager>();
         _scoreManager = FindObjectOfType<ScoreManager>();
         _conveyorController = FindObjectOfType<ConveyorController>();
@@ -40,7 +41,12 @@ public class Cell : MonoBehaviour, IPointerDownHandler
 
     private void RemoveFlower()
     {
-        Destroy(currentFlowerObject);
+        if (currentFlowerObject != null)
+        {
+            currentFlowerObject.GetComponent<FlowerObject>().PreDestroy();
+            Destroy(currentFlowerObject);
+        }
+
         currentFlower = null;
     }
 
@@ -106,6 +112,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         Debug.Log("Chain size is " + chain.Count);
         if (IsChainSameFlower(chain))
         {
+            SendPairTriggerToChain(chain);
             return;
         }
 
@@ -122,8 +129,22 @@ public class Cell : MonoBehaviour, IPointerDownHandler
             cell.RemoveFlower();
         }
 
+        StartCoroutine(PlantAfterDelay(uniqueFlowers, chain));
+    }
+
+    public IEnumerator PlantAfterDelay(HashSet<Flower> uniqueFlowers, HashSet<Cell> chain)
+    {
+        yield return new WaitForSeconds(1);
         _gridManager.PlantFlowersAtRandomSpot(uniqueFlowers);
         _scoreManager.AddScore(Math.Max(chain.Count - 3, 0) * 50 + 500);
+    }
+
+    public void SendPairTriggerToChain(HashSet<Cell> chain)
+    {
+        foreach (var cell in chain)
+        {
+            cell.currentFlowerObject.GetComponent<Animator>().SetTrigger(PairTrigger);
+        }
     }
 
     public List<Cell> NeighboursWithFlowers()
@@ -191,6 +212,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (_gridManager.isGameOver) return;
+
         Debug.Log("Clicked at " + code + " Data " + eventData);
         OnFlowerAdded(ConveyorController.SelectedFlower);
     }

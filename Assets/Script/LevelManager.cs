@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,9 +10,14 @@ public class LevelManager : MonoBehaviour
         StartCoroutine(LoadAsync(sceneName));
     }
 
-    public void LoadAfterDelay(string sceneName, float delaySeconds)
+    public void LoadNextAfterDelay(float delaySeconds)
     {
-        StartCoroutine(LoadSceneAfterDelay(sceneName, delaySeconds));
+        StartCoroutine(LoadSceneAfterDelay(delaySeconds));
+    }
+    
+    public void LoadAfterDelay(string name, float delaySeconds)
+    {
+        StartCoroutine(LoadSceneAfterDelay(name, delaySeconds));
     }
 
     public void QuitRequest()
@@ -26,24 +30,36 @@ public class LevelManager : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
-
-    IEnumerator LoadSceneAfterDelay(string sceneName, float delaySeconds)
+    
+    IEnumerator LoadSceneAfterDelay(string name, float delaySeconds)
     {
         yield return new WaitForSeconds(delaySeconds);
 
-        StartCoroutine(LoadAsync(sceneName));
+        StartCoroutine(LoadAsync(name));
     }
-    
-    IEnumerator LoadAsync(string sceneName)
+
+    IEnumerator LoadSceneAfterDelay(float delaySeconds)
     {
-        // The Application loads the Scene in the background as the current Scene runs.
-        // This is particularly good for creating loading screens.
-        // You could also load the Scene by using sceneBuildIndex. In this case Scene2 has
-        // a sceneBuildIndex of 1 as shown in Build Settings.
+        yield return new WaitForSeconds(delaySeconds);
 
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+        StartCoroutine(LoadAsync(SceneManager.GetActiveScene().buildIndex + 1));
+    }
 
-        // Wait until the asynchronous scene fully loads
+    IEnumerator LoadAsync(string sceneId)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneId);
+
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+    }
+
+
+    IEnumerator LoadAsync(int sceneId)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneId);
+
         while (!asyncLoad.isDone)
         {
             yield return null;

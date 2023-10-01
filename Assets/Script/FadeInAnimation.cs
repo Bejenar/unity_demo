@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,11 +7,25 @@ public class FadeInAnimation : MonoBehaviour
 {
     [SerializeField] private AnimationCurve animationCurve;
     [SerializeField] private float duration = 2f;
-
+    [SerializeField] private bool autoStart = false;
+    
     private Image _image;
 
+    private void Start()
+    {
+        if (autoStart)
+        {
+            StartCoroutine(FadeIn());
+        }
+    }
+
+    public void StartAnimation()
+    {
+        StartCoroutine(FadeIn());
+    }
+
     // Start is called before the first frame update
-    IEnumerator Start()
+    public IEnumerator FadeIn()
     {
         _image = GetComponent<Image>();
 
