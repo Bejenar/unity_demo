@@ -9,7 +9,7 @@ public class ConveyorController : MonoBehaviour
     [SerializeField] private int queueSize = 3;
     private LinkedList<GameObject> _seedQueue = new();
     private GridManager _gridManager;
-    private void Start()
+    private void Awake()
     {
         _gridManager = FindObjectOfType<GridManager>();
         SpawnInitialSeeds();

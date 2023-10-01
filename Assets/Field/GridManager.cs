@@ -163,6 +163,6 @@ public class GridManager : MonoBehaviour
     {
         Debug.LogError("game over");
         AudioSource.PlayClipAtPoint(audioClip, Vector2.zero);
-        _levelManager.LoadAfterDelay("GridTest", audioClip.length + 1);
+        _levelManager.LoadAfterDelay("Core Gameplay", audioClip.length + 1);
     }
 }
