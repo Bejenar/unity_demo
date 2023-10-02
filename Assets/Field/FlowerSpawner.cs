@@ -21,6 +21,6 @@ public class FlowerSpawner : MonoBehaviour
     public void Plant()
     {
         Debug.LogFormat("Attempting planting {2} on [{0}-{1}]", i,j, flower.flowerName);
-        _gridManager.GetCell(i,j).OnFlowerAdded(flower);
+        _gridManager.GetCell(i,j).OnFlowerAdded(flower, true);
     }
 }

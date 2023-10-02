@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 232ee8fc516db4d4c885b0346a365947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  growClip: {fileID: 8300000, guid: 08b0b166d4c121e4cbad7e6a1251e562, type: 3}
+  growClip: {fileID: 8300000, guid: b2bb987c30a3c274098e4d8a16f564de, type: 3}
   bloomClip: {fileID: 8300000, guid: 4a747e9b815370542a8a976ab5e45ef1, type: 3}
   comboParticle: {fileID: 8891704946502399380, guid: 2ac0296bae010d44f81beee648337479, type: 3}
   flower: {fileID: 11400000, guid: 675c3e64f49a23d488a832f2e25f3025, type: 2}

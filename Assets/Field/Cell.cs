@@ -25,7 +25,10 @@ public class Cell : MonoBehaviour, IPointerDownHandler
 
     private Dictionary<String, GameObject> _flowerPrefabMap = new();
     private static readonly int PairTrigger = Animator.StringToHash("PairTrigger");
+    private static readonly int ShakeTrigger = Animator.StringToHash("shakeTrigger");
+    private Animator _animator;
 
+    public static bool clickedThisFrame = false;
 
     // Start is called before the first frame update
     void Awake()
@@ -36,6 +39,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         _gridManager = FindObjectOfType<GridManager>();
         _scoreManager = FindObjectOfType<ScoreManager>();
         _conveyorController = FindObjectOfType<ConveyorController>();
+        _animator = GetComponent<Animator>();
         RemoveFlower();
     }
 
@@ -43,6 +47,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler
     {
         if (currentFlowerObject != null)
         {
+            if (currentFlower.isObstacle) return;
+            
             currentFlowerObject.GetComponent<FlowerObject>().PreDestroy();
             Destroy(currentFlowerObject);
         }
@@ -52,6 +58,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
 
     private void AddFlower(Flower flower)
     {
+        Debug.LogFormat("Adding flower {0}", flower.flowerName);
         currentFlowerObject = Instantiate(_flowerPrefabMap[flower.flowerName], transform, false);
         currentFlower = flower;
     }
@@ -66,11 +73,13 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         AudioSource.PlayClipAtPoint(errorClip, Vector2.zero);
     }
 
-    public void OnFlowerAdded(Flower flower)
+    public void OnFlowerAdded(Flower flower, bool cpuPlant)
     {
+        Debug.Log("Trying to plant " + flower.flowerName);
         if (currentFlower)
         {
             Debug.Log("there is already a flower on this cell");
+            _animator.SetTrigger(ShakeTrigger);
             PlayErrorSound();
             return;
         }
@@ -81,23 +90,29 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         if (IsAnyNeighbourIncompatible(neighboursWithFlowers, flower))
         {
             Debug.Log("Can not plant here. Incompatible plant nearby");
+            _animator.SetTrigger(ShakeTrigger);
             PlayErrorSound();
             currentFlower = null;
             return;
         }
 
         bool flowersOfSameTypePresent = _gridManager.FindCellsWithFlower(flower).Count > 0;
-        if (flowersOfSameTypePresent && IsNoSameNeighbours(neighboursWithFlowers, flower))
+        if (!flower.isObstacle && flowersOfSameTypePresent && IsNoSameNeighbours(neighboursWithFlowers, flower))
         {
             Debug.Log("Can not plant here. No neighbour with the same color");
+            _animator.SetTrigger(ShakeTrigger);
             PlayErrorSound();
             currentFlower = null;
             return;
         }
 
         AddFlower(flower);
+        
+        if (!cpuPlant)
+        {
+            _conveyorController.MoveAndSelect();
+        }
 
-        _conveyorController.MoveAndSelect();
         if (neighboursWithFlowers.Count == 0)
         {
             Debug.Log("Added flower no problem as neighbor cells are empty");
@@ -136,7 +151,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler
     {
         yield return new WaitForSeconds(1);
         _gridManager.PlantFlowersAtRandomSpot(uniqueFlowers);
-        _scoreManager.AddScore(Math.Max(chain.Count - 3, 0) * 50 + 500);
+        _scoreManager.AddScore(Math.Max(chain.Count - 3, 0) * 50 + 100);
+        _gridManager.CheckIfNoAvailableTurns();
     }
 
     public void SendPairTriggerToChain(HashSet<Cell> chain)
@@ -152,15 +168,30 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         List<Cell> withFlowers = new();
         foreach (var neighbour in _neighbours)
         {
-            if (neighbour.currentFlower != null) withFlowers.Add(neighbour);
+            if (neighbour.currentFlower != null && !neighbour.currentFlower.isObstacle) withFlowers.Add(neighbour);
         }
 
         return withFlowers;
     }
 
-    private bool IsAnyNeighbourIncompatible(List<Cell> neighbours, Flower flower)
+    public static bool IsAnyNeighbourIncompatible(List<Cell> neighbours, Flower flower)
     {
-        return neighbours.Any(cell => !cell.currentFlower.IsCompatible(flower));
+        return neighbours.Any(cell =>
+        {
+            if (cell.currentFlower == null) return true;
+            return !cell.currentFlower.IsCompatible(flower);
+        });
+    }
+    
+    public static bool AllNeighbourIncompatible(List<Cell> neighbours, Flower flower)
+    {
+        return neighbours.All(cell => !cell.currentFlower.IsCompatible(flower));
+    }
+
+    public static List<Cell> NeighboursWithNoFlowers(List<Cell> neighbours)
+    {
+        return neighbours.Where(cell => cell.currentFlower == null)
+            .ToList();
     }
 
     private bool IsNoSameNeighbours(List<Cell> neighbours, Flower flower)
@@ -174,8 +205,9 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         {
             return;
         }
-
         visited.Add(this);
+        
+        if (this.currentFlower.isObstacle) return;
 
         foreach (var neighbour in neighbours)
         {
@@ -212,9 +244,10 @@ public class Cell : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        clickedThisFrame = true;
         if (_gridManager.isGameOver) return;
-
+        
         Debug.Log("Clicked at " + code + " Data " + eventData);
-        OnFlowerAdded(ConveyorController.SelectedFlower);
+        OnFlowerAdded(ConveyorController.SelectedFlower, false);
     }
 }

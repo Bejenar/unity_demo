@@ -12,12 +12,16 @@ public class GridManager : MonoBehaviour
 
     private GridLayoutGroup _grid;
     public Cell[,] _cells;
-    
+
     [SerializeField] private AudioClip audioClip;
+    [SerializeField] private AudioClip characterSad;
 
     private LevelManager _levelManager;
-
+    private CharAnimator _charAnimator;
+    
     public bool isGameOver = false;
+
+    [SerializeField] private Flower obstacleFlower;
 
     // Start is called before the first frame update
     void Awake()
@@ -28,6 +32,7 @@ public class GridManager : MonoBehaviour
     public void Initialize()
     {
         _levelManager = FindObjectOfType<LevelManager>();
+        _charAnimator = FindObjectOfType<CharAnimator>();
         _grid = parent.GetComponent<GridLayoutGroup>();
         _cells = new Cell[size, size];
         Generate(size);
@@ -49,17 +54,39 @@ public class GridManager : MonoBehaviour
             _cells[i, j] = component;
         }
     }
-    
+
     public void PlantFlowersAtRandomSpot(ICollection<Flower> flowersToPlant)
     {
+        Debug.LogFormat("Flowers to plant {0}", flowersToPlant.Count);
+        Debug.LogFormat("Flowers to plant {0}", flowersToPlant);
         foreach (var flower in flowersToPlant)
         {
+            // if flower == currentSelectedFlower
+            // check if any of the available cells have the possibility to have it planted 
+            // this is to prevent instant lose 
             var availableCells = FindAvailableCells(flower);
+
+            if (flower == ConveyorController.SelectedFlower)
+            {
+                availableCells = availableCells
+                    .Where(cell =>
+                    {
+                        var goodNeighbours = Cell
+                            .NeighboursWithNoFlowers(cell._neighbours)
+                            .Where(c => c._neighbours.Any(neighbour => flower.IsCompatible(neighbour.currentFlower)))
+                            .ToList();
+                        return goodNeighbours.Count > 0;
+                    })
+                    .ToList();
+            }
+
             var range = Random.Range(0, availableCells.Count);
             Debug.LogFormat("there are {0} available cells picking cell number {1}", availableCells.Count, range);
-            availableCells[range].OnFlowerAdded(flower);
+            Debug.LogFormat("Planting {0}", flower);
+            availableCells[range].OnFlowerAdded(flower, true);
         }
     }
+
 
     public List<Cell> FindAvailableCells(Flower flowerToPlant)
     {
@@ -74,9 +101,17 @@ public class GridManager : MonoBehaviour
             {
                 continue;
             }
-            
-            var canPlantHere = !flowersOfSameTypePresent || cell.NeighboursWithFlowers().Any(neighbour => neighbour.currentFlower.IsSameFlower(flowerToPlant)); // ???
-            var forbiddenPlant = cell.NeighboursWithFlowers().Any(neighbour => !neighbour.currentFlower.IsCompatible(flowerToPlant));
+
+            if (flowerToPlant.isObstacle)
+            {
+                availableCells.Add(cell);
+                continue;
+            }
+
+            var canPlantHere = !flowersOfSameTypePresent || cell.NeighboursWithFlowers()
+                .Any(neighbour => neighbour.currentFlower.IsSameFlower(flowerToPlant)); // ???
+            var forbiddenPlant = cell.NeighboursWithFlowers()
+                .Any(neighbour => !neighbour.currentFlower.IsCompatible(flowerToPlant));
             if (canPlantHere && !forbiddenPlant)
             {
                 availableCells.Add(cell);
@@ -149,24 +184,30 @@ public class GridManager : MonoBehaviour
 
     public void SpawnObstacles(int count)
     {
-        
+        var flowers = new List<Flower>();
+        flowers.Add(obstacleFlower);
+        for (var i = 0; i < count; i++)
+        {
+            PlantFlowersAtRandomSpot(flowers);
+        }
     }
 
     public void CheckIfNoAvailableTurns()
     {
-        var availableCells = FindAvailableCells(ConveyorController.SelectedFlower);
-        if (availableCells.Count == 0)
-        {
-            GameOver();
-        }
+        // var availableCells = FindAvailableCells(ConveyorController.SelectedFlower);
+        // if (availableCells.Count == 0)
+        // {
+        //     GameOver();
+        // }
     }
 
     public void GameOver()
     {
         Debug.LogError("game over");
-        AudioSource.PlayClipAtPoint(audioClip, Vector2.zero);
+        AudioSource.PlayClipAtPoint(characterSad, Vector2.zero);
+        _charAnimator.TriggerSad();
         isGameOver = true;
         LevelUpManager._level = 3;
-        _levelManager.LoadAfterDelay("Core Gameplay", audioClip.length + 1);
+        _levelManager.LoadAfterDelay("Core Gameplay", characterSad.length);
     }
 }

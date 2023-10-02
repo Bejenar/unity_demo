@@ -7,6 +7,7 @@ public class LevelManager : MonoBehaviour
     public void LoadLevel(string sceneName)
     {
         Debug.Log("New Level load: " + sceneName);
+        LevelUpManager._level = 3;
         StartCoroutine(LoadAsync(sceneName));
     }
 

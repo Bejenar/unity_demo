@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2458110312417187779}
   - component: {fileID: 8949178904813725055}
   - component: {fileID: 5853658263243156742}
+  - component: {fileID: 1601380562156737725}
   m_Layer: 5
   m_Name: Cell
   m_TagString: Untagged
@@ -96,6 +97,7 @@ MonoBehaviour:
   - {fileID: 303379495465507290, guid: ea68f8ed69502fa44a43cfd3240091d8, type: 3}
   - {fileID: 303379495465507290, guid: b778e664ae4b93b47a4554eea533a988, type: 3}
   - {fileID: 303379495465507290, guid: bc35dedd115a46845a1943442c7b268f, type: 3}
+  - {fileID: 303379495465507290, guid: 14c14a79e149a60488206ad349b2af08, type: 3}
   currentFlower: {fileID: 0}
   currentFlowerObject: {fileID: 0}
   _neighbours: []
@@ -145,3 +147,24 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!95 &1601380562156737725
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647158959190821868}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 3acee4c52a18db04bbb9292522d5885e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

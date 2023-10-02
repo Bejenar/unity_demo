@@ -8,7 +8,10 @@ public class LevelUpManager : MonoBehaviour
     private GridManager _gridManager;
     private InitialSpawner _spawner;
     private ScoreManager _scoreManager;
+    private CharAnimator _charAnimator;
 
+    [SerializeField] private AudioClip characterHappy;
+    
     public static int _level;
 
     private Dictionary<int, int> _levelUpRequirements;
@@ -16,11 +19,13 @@ public class LevelUpManager : MonoBehaviour
     // Start is called before the first frame update
     private void Awake()
     {
+        Cursor.visible = true;
         _level = 3;
     }
 
     void Start()
     {
+        _charAnimator = FindObjectOfType<CharAnimator>();
         _gridManager = FindObjectOfType<GridManager>();
         _spawner = FindObjectOfType<InitialSpawner>();
         _scoreManager = FindObjectOfType<ScoreManager>();
@@ -30,11 +35,11 @@ public class LevelUpManager : MonoBehaviour
         _levelUpRequirements.Add(5, 1250);
         _levelUpRequirements.Add(6, 2500);
         _levelUpRequirements.Add(7, 5000);
-        _levelUpRequirements.Add(8, 10000);
     }
 
     public void CheckForLevelUp()
     {
+        
         var scoreTotal = _scoreManager.Score;
 
         if (!_levelUpRequirements.ContainsKey(_level + 1))
@@ -53,6 +58,8 @@ public class LevelUpManager : MonoBehaviour
 
     public void LevelUp()
     {
+        AudioSource.PlayClipAtPoint(characterHappy, Vector2.zero);
+        _charAnimator.TriggerHappy();
         SpawnParticle();
         _level++;
         _gridManager.DestroyCells();
@@ -62,7 +69,6 @@ public class LevelUpManager : MonoBehaviour
         }
 
         _gridManager.Initialize();
-        _spawner.PlantRandom();
 
         if (_level == 6)
         {
@@ -71,13 +77,15 @@ public class LevelUpManager : MonoBehaviour
 
         if (_level == 7)
         {
-            _gridManager.SpawnObstacles(4);
+            _gridManager.SpawnObstacles(3);
         }
 
         if (_level == 8)
         {
             Debug.Log("you won!");
         }
+        
+        _spawner.PlantRandom();
     }
 
     public void SpawnParticle()

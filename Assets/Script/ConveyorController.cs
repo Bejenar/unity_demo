@@ -7,10 +7,11 @@ public class ConveyorController : MonoBehaviour
     public static Flower SelectedFlower;
 
     [SerializeField] private int queueSize = 3;
-    private LinkedList<GameObject> _seedQueue = new();
+    private LinkedList<GameObject> _seedQueue;
     private GridManager _gridManager;
     private void Awake()
     {
+        _seedQueue = new();
         _gridManager = FindObjectOfType<GridManager>();
         SpawnInitialSeeds();
         SelectCurrentFlower();
@@ -22,7 +23,6 @@ public class ConveyorController : MonoBehaviour
         _seedQueue.RemoveFirst();
         AddRandomLast();
         SelectCurrentFlower();
-        _gridManager.CheckIfNoAvailableTurns();
     }
 
     private void SpawnInitialSeeds()

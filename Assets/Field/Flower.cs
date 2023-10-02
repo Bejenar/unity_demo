@@ -22,6 +22,7 @@ public class Flower : ScriptableObject
 
     public bool IsCompatible(Flower other)
     {
+        if (other == null || other.isObstacle) return true;
         return _compatibilityMap[flowerName].Contains(other.flowerName) || IsSameFlower(other);
     }
 
