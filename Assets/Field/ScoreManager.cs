@@ -9,7 +9,10 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private UnityEvent unityEvent;
     [SerializeField] private TextMeshProUGUI label;
     [SerializeField] private TextMeshProUGUI animatedLabel;
+    [SerializeField] private TextMeshProUGUI highScoreLabel;
     public int Score => score;
+
+    public static int HighScore = 0;
 
     private ScoreAnimator _scoreAnimator;
 
@@ -17,6 +20,7 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         _scoreAnimator = FindObjectOfType<ScoreAnimator>();
+        highScoreLabel.text = HighScore.ToString();
         label.text = score.ToString();
     }
 

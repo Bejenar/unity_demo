@@ -143,7 +143,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
         {
             cell.RemoveFlower();
         }
-
+        
         StartCoroutine(PlantAfterDelay(uniqueFlowers, chain));
     }
 
@@ -151,7 +151,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler
     {
         yield return new WaitForSeconds(1);
         _gridManager.PlantFlowersAtRandomSpot(uniqueFlowers);
-        _scoreManager.AddScore(Math.Max(chain.Count - 3, 0) * 50 + 100);
+        _scoreManager.AddScore(Math.Max(chain.Count - 3, 0) * 100 + 100);
         _gridManager.CheckIfNoAvailableTurns();
     }
 

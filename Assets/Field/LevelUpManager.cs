@@ -70,6 +70,11 @@ public class LevelUpManager : MonoBehaviour
 
         _gridManager.Initialize();
 
+        // if (_level == 5)
+        // {
+        //     _gridManager.SpawnObstacles(2);
+        // }
+        
         if (_level == 6)
         {
             _gridManager.SpawnObstacles(2);
@@ -77,7 +82,7 @@ public class LevelUpManager : MonoBehaviour
 
         if (_level == 7)
         {
-            _gridManager.SpawnObstacles(3);
+            _gridManager.SpawnObstacles(4);
         }
 
         if (_level == 8)

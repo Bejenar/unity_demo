@@ -13,7 +13,7 @@ public class PitchAnimator : MonoBehaviour
 
     private void Start()
     {
-        Cursor.visible = false;
+        // Cursor.visible = false;
         if (autoStart)
         {
             StartCoroutine(FadeIn());

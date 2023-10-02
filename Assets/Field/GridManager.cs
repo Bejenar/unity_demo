@@ -17,8 +17,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private AudioClip characterSad;
 
     private LevelManager _levelManager;
+    private ScoreManager _scoreManager;
     private CharAnimator _charAnimator;
-    
+
     public bool isGameOver = false;
 
     [SerializeField] private Flower obstacleFlower;
@@ -32,6 +33,7 @@ public class GridManager : MonoBehaviour
     public void Initialize()
     {
         _levelManager = FindObjectOfType<LevelManager>();
+        _scoreManager = FindObjectOfType<ScoreManager>();
         _charAnimator = FindObjectOfType<CharAnimator>();
         _grid = parent.GetComponent<GridLayoutGroup>();
         _cells = new Cell[size, size];
@@ -66,19 +68,20 @@ public class GridManager : MonoBehaviour
             // this is to prevent instant lose 
             var availableCells = FindAvailableCells(flower);
 
-            if (flower == ConveyorController.SelectedFlower)
-            {
-                availableCells = availableCells
-                    .Where(cell =>
-                    {
-                        var goodNeighbours = Cell
-                            .NeighboursWithNoFlowers(cell._neighbours)
-                            .Where(c => c._neighbours.Any(neighbour => flower.IsCompatible(neighbour.currentFlower)))
-                            .ToList();
-                        return goodNeighbours.Count > 0;
-                    })
-                    .ToList();
-            }
+            availableCells = availableCells
+                .Where(cell =>
+                {
+                    var goodNeighbours = Cell
+                        .NeighboursWithNoFlowers(cell._neighbours)
+                        .Where(c => c._neighbours.Any(neighbour => flower.IsCompatible(neighbour.currentFlower)))
+                        .ToList();
+                    return goodNeighbours.Count > 0;
+                })
+                .ToList();
+            // if (flower == ConveyorController.SelectedFlower)
+            // {
+            //     
+            // }
 
             var range = Random.Range(0, availableCells.Count);
             Debug.LogFormat("there are {0} available cells picking cell number {1}", availableCells.Count, range);
@@ -208,6 +211,15 @@ public class GridManager : MonoBehaviour
         _charAnimator.TriggerSad();
         isGameOver = true;
         LevelUpManager._level = 3;
+        ResolveHighScore();
         _levelManager.LoadAfterDelay("Core Gameplay", characterSad.length);
+    }
+
+    public void ResolveHighScore()
+    {
+        if (_scoreManager.Score > ScoreManager.HighScore)
+        {
+            ScoreManager.HighScore = _scoreManager.Score;
+        }
     }
 }
